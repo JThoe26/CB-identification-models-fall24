@@ -54,13 +54,35 @@ def get_comments_by_id(youtube, video_id: str, max_results=100):
     :param max_results: Maximum number of results to return.
     :return: List of comments.
     """
+    comments = []
     request = youtube.commentThreads().list(
         part="snippet",
         videoId=video_id,
-        maxResults=max_results
+        maxResults=100,  # Maximum allowed per request
+        order="relevance"
     )
     response = request.execute()
-    comments = [item['snippet']['topLevelComment']['snippet']['textDisplay'] for item in response['items']]
+
+    # While response is not empty, append comments and fetch more if needed on next page.
+    while response:
+        for item in response['items']:
+            comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
+            comments.append(comment)
+            if len(comments) >= max_results:
+                return comments
+
+        if 'nextPageToken' in response:
+            request = youtube.commentThreads().list(
+                part="snippet",
+                videoId=video_id,
+                maxResults=100,
+                order="relevance",
+                pageToken=response['nextPageToken']
+            )
+            response = request.execute()
+        else:
+            break
+
     return comments
 
 # Function to search comments by video name.
