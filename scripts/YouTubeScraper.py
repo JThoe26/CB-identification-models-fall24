@@ -7,7 +7,7 @@ import csv
 from googleapiclient.discovery import build
 
 # API key for YouTube Data API v3.
-API_KEY = 'AIzaSyDjd3rj8rf2VRfFa5IcD0FP7nfKN4CbZZ0'
+API_KEY = '<API_KEY>'
 
 # Function to convert a list of comments to csv.
 def comments_to_csv(comments: list, filename: str):
