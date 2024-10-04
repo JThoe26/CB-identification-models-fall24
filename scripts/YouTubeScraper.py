@@ -102,6 +102,6 @@ def search_comments_by_name(query: str, max_results=100):
 
 if __name__ == "__main__":
     # You can search by video name, or video id directly.
-    results = search_comments_by_name("", max_results = 5000)
+    results = search_comments_by_name("'CRINGE': Kamala Harris shredded over appeal to young male voters", max_results=1000)
     comments_to_csv(results, "./data/CyberbullyingCmts_5000.csv")
     
