@@ -21,13 +21,13 @@ def comments_to_csv(comments: list, filename: str):
         print(f"Creating directory: {dir}")
         os.makedirs(dir)
     print(f"Writing {len(comments)} comments to {filename}")
-    with open(filename, 'a', newline='', encoding='utf-8') as file:
+    with open(filename, 'a', newline='') as file:
             writer = csv.writer(file)
             for comment in comments:
                 writer.writerow([comment])
 
 # Function to get video ids from a video name query.
-def get_video_ids(youtube, query: str, max_results=5):
+def get_video_ids(youtube, query: str, max_results=1):
     """
     Get video ids from a video name query.
     :param youtube: YouTube API object.
@@ -54,13 +54,35 @@ def get_comments_by_id(youtube, video_id: str, max_results=100):
     :param max_results: Maximum number of results to return.
     :return: List of comments.
     """
+    comments = []
     request = youtube.commentThreads().list(
         part="snippet",
         videoId=video_id,
-        maxResults=max_results
+        maxResults=100,  # Maximum allowed per request
+        order="relevance"
     )
     response = request.execute()
-    comments = [item['snippet']['topLevelComment']['snippet']['textDisplay'] for item in response['items']]
+
+    # While response is not empty, append comments and fetch more if needed on next page.
+    while response:
+        for item in response['items']:
+            comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
+            comments.append(comment)
+            if len(comments) >= max_results:
+                return comments
+
+        if 'nextPageToken' in response:
+            request = youtube.commentThreads().list(
+                part="snippet",
+                videoId=video_id,
+                maxResults=100,
+                order="relevance",
+                pageToken=response['nextPageToken']
+            )
+            response = request.execute()
+        else:
+            break
+
     return comments
 
 # Function to search comments by video name.
@@ -83,13 +105,6 @@ def search_comments_by_name(query: str, max_results=100):
 
 if __name__ == "__main__":
     # You can search by video name, or video id directly.
-    results = search_comments_by_name("Racist Karens KNOCKED OUT COLD And Getting Instant Karma! | BIG KARMA", 500)
-    results = search_comments_by_name("Full Debate: Biden and Trump in the First 2024 Presidential Debate | WSJ", 1000)
-    results = search_comments_by_name("\"You're Glorifying Obesity!\" Piers Morgan Interviews TikTok 'Fat Influencer'", 1000)
-    results = search_comments_by_name("RiceGum - Its EveryNight Sis feat. Alissa Violet (Official Music Video)", 1000)
-    results = search_comments_by_name("Worst Youtuber Apology Ever", 1000)
-    results = search_comments_by_name("Konstantin Kisin: Woke Culture HAS Gone Too Far - 7/8 | Oxford Union", 1000)
-    
-
+    results = search_comments_by_name("Video Name", 10)
     comments_to_csv(results, "./data/pathToCSV.csv")
     
