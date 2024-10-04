@@ -1,5 +1,3 @@
-"""Main script for scraping YouTube comments."""
-
 # Import the necessary libraries.
 import os
 import csv
@@ -7,7 +5,7 @@ import csv
 from googleapiclient.discovery import build
 
 # API key for YouTube Data API v3.
-API_KEY = '<API_KEY>'
+API_KEY = ''
 
 # Function to convert a list of comments to csv.
 def comments_to_csv(comments: list, filename: str):
