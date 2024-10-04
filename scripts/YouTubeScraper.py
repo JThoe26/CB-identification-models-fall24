@@ -1,12 +1,11 @@
 # Import the necessary libraries.
 import os
 import csv
-import html
 # package install: 'pip install google-api-python-client'
 from googleapiclient.discovery import build
 
 # API key for YouTube Data API v3.
-API_KEY = 'AIzaSyDbfB2LfJhj2dsIfJJ-CMXKRvSqIDV8JwQ '
+API_KEY = ''
 
 # Function to convert a list of comments to csv.
 def comments_to_csv(comments: list, filename: str):
@@ -20,11 +19,10 @@ def comments_to_csv(comments: list, filename: str):
         print(f"Creating directory: {dir}")
         os.makedirs(dir)
     print(f"Writing {len(comments)} comments to {filename}")
-    with open(filename, 'a', newline='', encoding='utf-8') as file:
+    with open(filename, 'a', newline='') as file:
             writer = csv.writer(file)
             for comment in comments:
-                decoded_comment = html.unescape(comment)
-                writer.writerow([decoded_comment])
+                writer.writerow([comment])
 
 # Function to get video ids from a video name query.
 def get_video_ids(youtube, query: str, max_results=1):
@@ -46,7 +44,7 @@ def get_video_ids(youtube, query: str, max_results=1):
     return video_ids
 
 # Function to get comments by video id.
-def get_comments_by_id(youtube, video_id: str , max_total=5000, max_results=100):
+def get_comments_by_id(youtube, video_id: str, max_results=100):
     """
     Get comments by video id.
     :param youtube: YouTube API object.
@@ -58,31 +56,34 @@ def get_comments_by_id(youtube, video_id: str , max_total=5000, max_results=100)
     request = youtube.commentThreads().list(
         part="snippet",
         videoId=video_id,
-        maxResults=max_results
+        maxResults=100,  # Maximum allowed per request
+        order="relevance"
     )
-    
-    # Loop through pages of comments until we reach max_total comments
-    while request and len(comments) < max_total:
-        response = request.execute()
-        comments += [item['snippet']['topLevelComment']['snippet']['textDisplay'] for item in response['items']]
-        
-        # Stop if we've reached the total maximum number of comments
-        if len(comments) >= max_total:
-            break
-        
-        # Check if there's a next page of comments
+    response = request.execute()
+
+    # While response is not empty, append comments and fetch more if needed on next page.
+    while response:
+        for item in response['items']:
+            comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
+            comments.append(comment)
+            if len(comments) >= max_results:
+                return comments
+
         if 'nextPageToken' in response:
             request = youtube.commentThreads().list(
                 part="snippet",
                 videoId=video_id,
-                maxResults=max_results,
+                maxResults=100,
+                order="relevance",
                 pageToken=response['nextPageToken']
             )
+            response = request.execute()
         else:
-            break  # No more pages available
-    
-    return comments[:max_total]
+            break
 
+    return comments
+
+# Function to search comments by video name.
 def search_comments_by_name(query: str, max_results=100):
     """
     Search comments by video name.
@@ -102,6 +103,6 @@ def search_comments_by_name(query: str, max_results=100):
 
 if __name__ == "__main__":
     # You can search by video name, or video id directly.
-    results = search_comments_by_name("'CRINGE': Kamala Harris shredded over appeal to young male voters", max_results=1000)
-    comments_to_csv(results, "./data/CyberbullyingCmts_5000.csv")
+    results = search_comments_by_name("Video Name", 10)
+    comments_to_csv(results, "./data/pathToCSV.csv")
     
