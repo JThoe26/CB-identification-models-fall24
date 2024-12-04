@@ -126,7 +126,7 @@ confusion_mat = eval_result.get('eval_confusion_matrix', 'N/A')
 trainer.save_model("./bert")
 
 # Save metrics to a file
-with open("metrics_output.txt", "w") as f:
+with open("results/metrics_output.txt", "w") as f:
     f.write(f"Training Duration: {train_duration} seconds\n")
     f.write(f"Evaluation Duration: {eval_duration} seconds\n")
     f.write(f"Training Loss: {train_loss}\n")
@@ -178,7 +178,7 @@ df['Predicted_Label'] = label_comments(df['Comment'])
 df['Predicted_Label'] = df['Predicted_Label'].map({0: "Not Cyberbullying", 1: "Cyberbullying"})
 
 # Display the first few rows of the dataset
-df.to_csv("data/bert_prediction.csv", index=False)
+df.to_csv("results/bert_prediction.csv", index=False)
 print(df.head())
 
 

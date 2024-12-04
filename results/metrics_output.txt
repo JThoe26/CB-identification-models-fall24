@@ -1,0 +1,13 @@
+Training Duration: 21041.241740942 seconds
+Evaluation Duration: 617.0202312469482 seconds
+Training Loss: 0.25318844353316283
+Evaluation Loss: 0.21659813821315765
+Accuracy: 0.9512242143821091
+Precision: 0.951534932043892
+Recall: 0.9512242143821091
+F1 Score: 0.9513455714346937
+Classification Report:
+N/A
+Confusion Matrix:
+[[3454  141]
+ [ 112 1480]]
